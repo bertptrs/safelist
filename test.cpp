@@ -1,5 +1,7 @@
 #include "safelist.hpp"
+#include <list>
 #include <iostream>
+#include <typeinfo>
 
 template<class T>
 void test_iters(T& sl)
@@ -21,17 +23,29 @@ void test_iters(T& sl)
 	} while (it != sl.begin());
 }
 
+template<class T>
+void setup_list(T& l)
+{
+	l.push_front(2);
+	l.push_front(1);
+	l.push_back(3);
+}
+
+
+template<class T>
+void test()
+{
+	std::cerr << "Testing implementation " << typeid(T).name() << std::endl;
+	T t;
+	setup_list(t);
+
+	test_iters(t);
+	test_iters((const T) t);
+}
+
 int main()
 {
-	safelist<int> sl;
-
-	// Test push front/back
-	sl.push_front(2);
-	sl.push_front(1);
-	sl.push_back(3);
-
-	test_iters(sl);
-	test_iters((const safelist<int>) sl);
-
+	test<std::list<int>>();
+	test<safelist<int>>();
 	return 0;
 }
