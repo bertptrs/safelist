@@ -1,5 +1,7 @@
 # safelist -- An memory-safe linked list in C++
 
+[![Build Status](https://travis-ci.org/bertptrs/safelist.svg?branch=master)](https://travis-ci.org/bertptrs/safelist)
+
 This repository contains a header-only reimplementation of `std::list`
 using the memory constructs introduced in C++11. The goals of this
 project is as follows:

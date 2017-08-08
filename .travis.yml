@@ -1,0 +1,9 @@
+language: c++
+
+compilers:
+    - gcc
+    - clang
+
+install: make
+
+script: ./test
