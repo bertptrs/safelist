@@ -1,4 +1,4 @@
-CXXFLAGS=-Wall -Wextra -g -std=c++14 -O0
+CXXFLAGS=-Wall -Wextra -g -std=c++11 -O0
 
 all: test
 
