@@ -6,7 +6,7 @@ This repository contains a header-only reimplementation of `std::list`
 using the memory constructs introduced in C++11. The goals of this
 project is as follows:
 
-- Have a destructor-free implementation of a linked list
+- Have a delete-free implementation of a linked list
 - Prevent use-after-free memory errors
 - Prevent dangling pointers
 - Prevent memory leaks
@@ -21,12 +21,15 @@ replacing it should not be a problem. Include [safelist.hpp](safelist.hpp)
 wherever you would normally include `list`, and change your types
 accordingly.
 
-Not everything isKey differences for now:
+Not everything is implemented exactly as it is in `std::list`. Key
+differences are:
 
 - Allocator is not specifiable, and is the default allocator
 - Features are lacking according to what it says in
   [Progress](#Progress)
 - Not all typedefs are implemented
+- Not all undefined behaviour works the same way. For instance,
+  iterating past the end causes a loop back to the start.
 
 ## Progress
 
