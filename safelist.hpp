@@ -5,9 +5,6 @@
 template<class T>
 class safelist
 {
-	private:
-		struct entry;
-
 	public:
 		typedef T value_type;
 		typedef std::size_t size_type;
@@ -15,53 +12,8 @@ class safelist
 		typedef T& reference;
 		typedef const T& const_reference;
 
-		class iterator {
-			public:
-				friend safelist<T>;
-
-				iterator() = default;
-				iterator(const iterator&) = default;
-				iterator(iterator&&) = default;
-
-				iterator& operator++();
-				iterator operator++(int);
-				iterator& operator--();
-				iterator operator--(int);
-
-				reference operator*() const;
-				bool operator==(const iterator&) const;
-				bool operator!=(const iterator&) const;
-
-			private:
-				std::weak_ptr<entry> item;
-				std::weak_ptr<entry> prev; // Needed for past-the-end iterators.
-
-				iterator(const std::weak_ptr<entry>& item): item(item) {};
-		};
-
-		class const_iterator {
-			public:
-				friend safelist<T>;
-
-				const_iterator() = default;
-				const_iterator(const const_iterator&) = default;
-				const_iterator(const_iterator&&) = default;
-
-				const_iterator& operator++();
-				const_iterator operator++(int);
-				const_iterator& operator--();
-				const_iterator operator--(int);
-
-				const_reference operator*() const;
-				bool operator==(const const_iterator&) const;
-				bool operator!=(const const_iterator&) const;
-
-			private:
-				std::weak_ptr<const entry> item;
-				std::weak_ptr<const entry> prev; // Needed for past-the-end iterators.
-
-				const_iterator(const std::weak_ptr<entry>& item): item(item) {};
-		};
+		class iterator;
+		class const_iterator;
 
 		void push_front(const value_type& value);
 		void push_back(const value_type& value);
@@ -74,24 +26,7 @@ class safelist
 
 
 	private:
-		struct entry {
-			typedef std::shared_ptr<entry> fwd_ptr;
-			typedef std::weak_ptr<entry> back_ptr;
-
-			std::weak_ptr<entry> prev;
-			std::shared_ptr<entry> next;
-			value_type value;
-
-			entry(const value_type& value) :
-				value(value)
-			{
-			}
-
-			entry (const value_type& value, const fwd_ptr next) :
-				next(next), value(value)
-			{
-			}
-		};
+		struct entry;
 
 		std::shared_ptr<entry> head;
 		std::weak_ptr<entry> tail;
@@ -99,6 +34,78 @@ class safelist
 		inline void singleton_list(const T& value);
 };
 
+template<class T>
+class safelist<T>::iterator
+{
+	public:
+		friend safelist<T>;
+
+		iterator() = default;
+		iterator(const iterator&) = default;
+		iterator(iterator&&) = default;
+
+		iterator& operator++();
+		iterator operator++(int);
+		iterator& operator--();
+		iterator operator--(int);
+
+		reference operator*() const;
+		bool operator==(const iterator&) const;
+		bool operator!=(const iterator&) const;
+
+	private:
+		std::weak_ptr<entry> item;
+		std::weak_ptr<entry> prev; // Needed for past-the-end iterators.
+
+		iterator(const std::weak_ptr<entry>& item): item(item) {};
+};
+
+template<class T>
+class safelist<T>::const_iterator
+{
+	public:
+		friend safelist<T>;
+
+		const_iterator() = default;
+		const_iterator(const const_iterator&) = default;
+		const_iterator(const_iterator&&) = default;
+
+		const_iterator& operator++();
+		const_iterator operator++(int);
+		const_iterator& operator--();
+		const_iterator operator--(int);
+
+		const_reference operator*() const;
+		bool operator==(const const_iterator&) const;
+		bool operator!=(const const_iterator&) const;
+
+	private:
+		std::weak_ptr<const entry> item;
+		std::weak_ptr<const entry> prev; // Needed for past-the-end iterators.
+
+		const_iterator(const std::weak_ptr<entry>& item): item(item) {};
+};
+
+template<class T>
+struct safelist<T>::entry
+{
+	typedef std::shared_ptr<entry> fwd_ptr;
+	typedef std::weak_ptr<entry> back_ptr;
+
+	std::weak_ptr<entry> prev;
+	std::shared_ptr<entry> next;
+	value_type value;
+
+	entry(const value_type& value) :
+		value(value)
+	{
+	}
+
+	entry (const value_type& value, const fwd_ptr next) :
+		next(next), value(value)
+	{
+	}
+};
 
 template<class T>
 bool safelist<T>::empty() const
