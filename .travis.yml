@@ -6,4 +6,9 @@ compilers:
 
 install: make
 
-script: ./test
+script: make verify
+
+addons:
+    apt:
+        packages:
+            - valgrind

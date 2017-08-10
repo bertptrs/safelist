@@ -35,7 +35,6 @@ void setup_list(T& l)
 template<class T>
 void test()
 {
-	std::cerr << "Testing implementation " << typeid(T).name() << std::endl;
 	T t;
 	setup_list(t);
 
@@ -43,9 +42,13 @@ void test()
 	test_iters((const T) t);
 }
 
-int main()
+int main(int argc, char**)
 {
-	test<std::list<int>>();
-	test<safelist<int>>();
+	if (argc == 2) {
+		test<std::list<int>>();
+	} else {
+		test<safelist<int>>();
+	}
+
 	return 0;
 }

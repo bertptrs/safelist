@@ -1,6 +1,19 @@
 #pragma once
 
 #include <memory>
+#include <utility>
+
+#if __cplusplus < 201300
+namespace std {
+	// If C++14 is not available, use the following to still have make_unique
+	template<typename T, typename... Args>
+		unique_ptr<T> make_unique(Args&&... args)
+		{
+			return unique_ptr<T>(new T(std::forward<Args>(args)...));
+		}
+};
+#endif
+
 
 template<class T>
 class safelist
@@ -15,8 +28,13 @@ class safelist
 		class iterator;
 		class const_iterator;
 
+		safelist();
+		~safelist();
+
 		void push_front(const value_type& value);
 		void push_back(const value_type& value);
+		void clear();
+
 		bool empty() const;
 
 		iterator begin();
@@ -27,11 +45,7 @@ class safelist
 
 	private:
 		struct entry;
-
-		std::shared_ptr<entry> head;
-		std::weak_ptr<entry> tail;
-
-		inline void singleton_list(const T& value);
+		std::shared_ptr<entry> entryPoint;
 };
 
 template<class T>
@@ -55,7 +69,6 @@ class safelist<T>::iterator
 
 	private:
 		std::weak_ptr<entry> item;
-		std::weak_ptr<entry> prev; // Needed for past-the-end iterators.
 
 		iterator(const std::weak_ptr<entry>& item): item(item) {};
 };
@@ -81,7 +94,6 @@ class safelist<T>::const_iterator
 
 	private:
 		std::weak_ptr<const entry> item;
-		std::weak_ptr<const entry> prev; // Needed for past-the-end iterators.
 
 		const_iterator(const std::weak_ptr<entry>& item): item(item) {};
 };
@@ -89,98 +101,96 @@ class safelist<T>::const_iterator
 template<class T>
 struct safelist<T>::entry
 {
-	typedef std::shared_ptr<entry> fwd_ptr;
-	typedef std::weak_ptr<entry> back_ptr;
-
 	std::weak_ptr<entry> prev;
 	std::shared_ptr<entry> next;
-	value_type value;
+	std::unique_ptr<value_type> value;
 
-	entry(const value_type& value) :
-		value(value)
+	entry()
 	{
 	}
 
-	entry (const value_type& value, const fwd_ptr next) :
-		next(next), value(value)
+	entry(const value_type& value) :
+		value(std::make_unique<value_type>(value))
+	{
+	}
+
+	entry (const value_type& value, const std::shared_ptr<entry>& next, const std::weak_ptr<entry>& prev) :
+		prev(prev),
+		next(next),
+		value(std::make_unique<value_type>(value))
 	{
 	}
 };
 
+
+template<class T>
+safelist<T>::safelist(): entryPoint(std::make_shared<entry>())
+{
+	clear();
+}
+
+template<class T>
+safelist<T>::~safelist()
+{
+	entryPoint->next = nullptr;
+}
+
+template<class T>
+void safelist<T>::clear()
+{
+	entryPoint->next = entryPoint;
+	entryPoint->prev = entryPoint;
+}
+
 template<class T>
 bool safelist<T>::empty() const
 {
-	return head == nullptr;
+	return entryPoint->next == nullptr;
 }
 
-	template<class T>
+template<class T>
 void safelist<T>::push_front(const T& value)
 {
-	if (empty()) {
-		singleton_list(value);
-	} else {
-		auto to_add = std::make_shared<entry>(value, head);
-		to_add->next = head;
-		head->prev = to_add;
-		head = to_add;
-	}
+	entryPoint->next = std::make_shared<entry>(value, entryPoint->next, entryPoint);
+	entryPoint->next->next->prev = std::weak_ptr<entry>(entryPoint->next);
 }
 
-	template<class T>
+template<class T>
 void safelist<T>::push_back(const T& value)
 {
-	if (empty()) {
-		singleton_list(value);
-	} else {
-		auto to_add = std::make_shared<entry>(value);
-		to_add->prev = tail;
-		tail.lock()->next = to_add;
-		tail = std::weak_ptr<entry>(to_add);
-	}
+	auto tmpShared = entryPoint->prev.lock();
+
+	entryPoint->prev = tmpShared->next = std::make_shared<entry>(value, entryPoint, entryPoint->prev);
 }
 
-	template<class T>
-void safelist<T>::singleton_list(const T& value)
-{
-	head = std::make_shared<entry>(value);
-	tail = std::weak_ptr<entry>(head);
-}
-
-	template<class T>
+template<class T>
 typename safelist<T>::iterator safelist<T>::begin()
 {
-	return iterator(std::weak_ptr<entry>(head));
+	return iterator(std::weak_ptr<entry>(entryPoint->next));
 }
 
-	template<class T>
+template<class T>
 typename safelist<T>::iterator safelist<T>::end()
 {
-	iterator it;
-	it.prev = tail;
-
-	return it;
+	return iterator(std::weak_ptr<entry>(entryPoint));
 }
 
-	template<class T>
+template<class T>
 typename safelist<T>::const_iterator safelist<T>::begin() const
 {
-	return const_iterator(std::weak_ptr<entry>(head));
+	return const_iterator(std::weak_ptr<entry>(entryPoint->next));
 }
 
-	template<class T>
+template<class T>
 typename safelist<T>::const_iterator safelist<T>::end() const
 {
-	const_iterator it;
-	it.prev = tail;
-
-	return it;
+	return const_iterator(entryPoint);
 }
 
 // Iterator functions
 template<class T>
 typename safelist<T>::iterator& safelist<T>::iterator::operator++()
 {
-	prev = item;
 	item = std::weak_ptr<entry>(item.lock()->next);
 	return *this;
 }
@@ -197,8 +207,7 @@ typename safelist<T>::iterator safelist<T>::iterator::operator++(int)
 template<class T>
 typename safelist<T>::iterator& safelist<T>::iterator::operator--()
 {
-	item = prev;
-	prev = item.lock()->prev;
+	item = item.lock()->prev;
 
 	return *this;
 }
@@ -215,7 +224,7 @@ typename safelist<T>::iterator safelist<T>::iterator::operator--(int)
 template<class T>
 T& safelist<T>::iterator::operator*() const
 {
-	return item.lock()->value;
+	return *item.lock()->value;
 }
 
 template<class T>
@@ -234,7 +243,6 @@ bool safelist<T>::iterator::operator!=(const iterator& other) const
 template<class T>
 typename safelist<T>::const_iterator& safelist<T>::const_iterator::operator++()
 {
-	prev = item;
 	item = std::weak_ptr<entry>(item.lock()->next);
 	return *this;
 }
@@ -251,8 +259,7 @@ typename safelist<T>::const_iterator safelist<T>::const_iterator::operator++(int
 template<class T>
 typename safelist<T>::const_iterator& safelist<T>::const_iterator::operator--()
 {
-	item = prev;
-	prev = item.lock()->prev;
+	item = item.lock()->prev;
 
 	return *this;
 }
@@ -269,7 +276,7 @@ typename safelist<T>::const_iterator safelist<T>::const_iterator::operator--(int
 template<class T>
 const T& safelist<T>::const_iterator::operator*() const
 {
-	return item.lock()->value;
+	return *item.lock()->value;
 }
 
 template<class T>
