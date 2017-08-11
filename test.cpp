@@ -31,6 +31,13 @@ void test_iters(T& sl)
 }
 
 template<class T>
+void test_access(T& sl)
+{
+	std::cout << sl.front() << std::endl;
+	std::cout << sl.back() << std::endl;
+}
+
+template<class T>
 void setup_list(T& l)
 {
 	l.push_front(2);
@@ -63,6 +70,9 @@ void test()
 	test_iters((const T) t);
 
 	test_constructors<T>();
+
+	test_access(t);
+	test_access((const T) t);
 }
 
 int main(int argc, char**)

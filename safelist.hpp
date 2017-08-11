@@ -55,6 +55,13 @@ class safelist
 
 		void push_front(const value_type& value);
 		void push_back(const value_type& value);
+
+		// Element accesss
+		value_type& front();
+		value_type& back();
+		const value_type& front() const;
+		const value_type& back() const;
+
 		void clear();
 
 		bool empty() const;
@@ -205,6 +212,32 @@ bool safelist<T>::empty() const
 	return entryPoint->next == entryPoint;
 }
 
+// Element access
+template<class T>
+T& safelist<T>::front()
+{
+	return *entryPoint->next->value;
+}
+
+template<class T>
+const T& safelist<T>::front() const
+{
+	return *entryPoint->next->value;
+}
+
+template<class T>
+T& safelist<T>::back()
+{
+	return *entryPoint->prev.lock()->value;
+}
+
+template<class T>
+const T& safelist<T>::back() const
+{
+	return *entryPoint->prev.lock()->value;
+}
+
+// Element creation
 template<class T>
 void safelist<T>::push_front(const T& value)
 {
@@ -220,6 +253,9 @@ void safelist<T>::push_back(const T& value)
 	entryPoint->prev = tmpShared->next = std::make_shared<entry>(value, entryPoint, entryPoint->prev);
 }
 
+// Element deletion
+
+// Iterator creation
 template<class T>
 typename safelist<T>::iterator safelist<T>::begin()
 {
