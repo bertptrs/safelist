@@ -36,8 +36,8 @@ differences are:
 ### Basic use
 
 - [x] Empty constructor
-- [ ] Count constructor
-- [ ] Range constructor
+- [x] Count constructor
+- [x] Range constructor
 - [x] Push back/push front
 - [ ] Emplace back/emplace front
 - [ ] Pop back/pop front

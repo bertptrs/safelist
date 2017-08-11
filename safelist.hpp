@@ -1,17 +1,19 @@
 #pragma once
 
+#include <initializer_list>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #if __cplusplus < 201300
 namespace std {
 	// If C++14 is not available, use the following to still have make_unique
 	template<typename T, typename... Args>
-		unique_ptr<T> make_unique(Args&&... args)
+		static unique_ptr<T> make_unique(Args&&... args)
 		{
 			return unique_ptr<T>(new T(std::forward<Args>(args)...));
 		}
-};
+}
 #endif
 
 
@@ -28,7 +30,27 @@ class safelist
 		class iterator;
 		class const_iterator;
 
+		// Template definitions
+		template<typename Iterator>
+			using iterator_value_type = decltype(*(std::declval<Iterator>()));
+
+		template<typename Iterator>
+			using is_compatible_iterator = std::is_assignable<value_type&, iterator_value_type<Iterator>>;
+
+		template<typename Iterator>
+			using if_is_compatible_iterator = std::enable_if<is_compatible_iterator<Iterator>::value>;
+
+		// Constructors
 		safelist();
+		safelist(size_type count);
+		safelist(size_type count, const value_type& v);
+		safelist(const safelist<value_type>& other);
+		safelist(std::initializer_list<value_type> l);
+		template<class InputIt,
+			typename = typename if_is_compatible_iterator<InputIt>::type>
+				safelist(InputIt first, InputIt last);
+
+
 		~safelist();
 
 		void push_front(const value_type& value);
@@ -41,7 +63,6 @@ class safelist
 		iterator end();
 		const_iterator begin() const;
 		const_iterator end() const;
-
 
 	private:
 		struct entry;
@@ -123,10 +144,43 @@ struct safelist<T>::entry
 };
 
 
+// Constructor definitions
 template<class T>
 safelist<T>::safelist(): entryPoint(std::make_shared<entry>())
 {
 	clear();
+}
+
+template<class T>
+safelist<T>::safelist(size_type count): safelist(count, value_type())
+{
+}
+
+template<class T>
+safelist<T>::safelist(size_type count, const value_type& value): safelist()
+{
+	while (count--) {
+		push_front(value);
+	}
+}
+
+template<class T>
+template<class InputIt, typename>
+safelist<T>::safelist(InputIt first, InputIt last): safelist()
+{
+	for (; first != last; ++first) {
+		push_back(*first);
+	}
+}
+
+template<class T>
+safelist<T>::safelist(const safelist<T>& other): safelist(other.begin(), other.end())
+{
+}
+
+template<class T>
+safelist<T>::safelist(std::initializer_list<value_type> l): safelist(l.begin(), l.end())
+{
 }
 
 template<class T>
@@ -145,7 +199,7 @@ void safelist<T>::clear()
 template<class T>
 bool safelist<T>::empty() const
 {
-	return entryPoint->next == nullptr;
+	return entryPoint->next == entryPoint;
 }
 
 template<class T>
