@@ -66,6 +66,7 @@ class safelist
 
 	private:
 		struct entry;
+
 		std::shared_ptr<entry> entryPoint;
 };
 
@@ -74,6 +75,7 @@ class safelist<T>::iterator
 {
 	public:
 		friend safelist<T>;
+		friend safelist<T>::const_iterator;
 
 		iterator() = default;
 		iterator(const iterator&) = default;
@@ -103,6 +105,7 @@ class safelist<T>::const_iterator
 		const_iterator() = default;
 		const_iterator(const const_iterator&) = default;
 		const_iterator(const_iterator&&) = default;
+		const_iterator(const iterator&);
 
 		const_iterator& operator++();
 		const_iterator operator++(int);
@@ -294,6 +297,11 @@ bool safelist<T>::iterator::operator!=(const iterator& other) const
 }
 
 // Const iterator functions. Mostly repeated from above
+template<class T>
+safelist<T>::const_iterator::const_iterator(const safelist<T>::iterator& it): item(it.item)
+{
+}
+
 template<class T>
 typename safelist<T>::const_iterator& safelist<T>::const_iterator::operator++()
 {
