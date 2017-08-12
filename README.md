@@ -38,9 +38,10 @@ differences are:
 - [x] Empty constructor
 - [x] Count constructor
 - [x] Range constructor
+- [x] Assignment operators
 - [x] Push back/push front
 - [ ] Emplace back/emplace front
-- [ ] Pop back/pop front
+- [x] Pop back/pop front
 - [x] Iterators
 - [x] Const iterators
 - [ ] Reverse iterators

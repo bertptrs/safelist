@@ -45,16 +45,24 @@ class safelist
 		safelist(size_type count);
 		safelist(size_type count, const value_type& v);
 		safelist(const safelist<value_type>& other);
+		safelist(safelist<value_type>&&);
 		safelist(std::initializer_list<value_type> l);
 		template<class InputIt,
 			typename = typename if_is_compatible_iterator<InputIt>::type>
 				safelist(InputIt first, InputIt last);
+
+		// Assignment operators
+		safelist<value_type>& operator=(const safelist<value_type>& other);
+		safelist<value_type>& operator=(safelist<value_type>&& other);
 
 
 		~safelist();
 
 		void push_front(const value_type& value);
 		void push_back(const value_type& value);
+
+		void pop_front();
+		void pop_back();
 
 		// Element accesss
 		value_type& front();
@@ -189,6 +197,13 @@ safelist<T>::safelist(const safelist<T>& other): safelist(other.begin(), other.e
 }
 
 template<class T>
+safelist<T>::safelist(safelist<T>&& other)
+{
+	entryPoint = other.entryPoint;
+	other.entryPoint = nullptr;
+}
+
+template<class T>
 safelist<T>::safelist(std::initializer_list<value_type> l): safelist(l.begin(), l.end())
 {
 }
@@ -196,8 +211,33 @@ safelist<T>::safelist(std::initializer_list<value_type> l): safelist(l.begin(), 
 template<class T>
 safelist<T>::~safelist()
 {
-	entryPoint->next = nullptr;
+	if (entryPoint) {
+		entryPoint->next = nullptr;
+	}
 }
+
+// Assignment operators
+template<class T>
+safelist<T>& safelist<T>::operator=(const safelist<T>& other)
+{
+	clear();
+	for (auto &entry : other) {
+		push_back(entry);
+	}
+
+	return *this;
+}
+
+template<class T>
+safelist<T>& safelist<T>::operator=(safelist<T>&& other)
+{
+	entryPoint->next = nullptr; // Allow this list to auto-delete
+	entryPoint = other.entryPoint; // Take other list entrypoint
+	other.entryPoint = nullptr; // Invalidate other
+
+	return *this;
+}
+
 
 template<class T>
 void safelist<T>::clear()
@@ -242,7 +282,7 @@ template<class T>
 void safelist<T>::push_front(const T& value)
 {
 	entryPoint->next = std::make_shared<entry>(value, entryPoint->next, entryPoint);
-	entryPoint->next->next->prev = std::weak_ptr<entry>(entryPoint->next);
+	entryPoint->next->next->prev = entryPoint->next;
 }
 
 template<class T>
@@ -254,24 +294,38 @@ void safelist<T>::push_back(const T& value)
 }
 
 // Element deletion
+template<class T>
+void safelist<T>::pop_front()
+{
+	entryPoint->next = entryPoint->next->next;
+	entryPoint->next->prev = entryPoint;
+}
+
+template<class T>
+void safelist<T>::pop_back()
+{
+	auto tempShared = entryPoint->prev.lock()->prev.lock();
+	entryPoint->prev = tempShared;
+	tempShared->next = entryPoint;
+}
 
 // Iterator creation
 template<class T>
 typename safelist<T>::iterator safelist<T>::begin()
 {
-	return iterator(std::weak_ptr<entry>(entryPoint->next));
+	return iterator(entryPoint->next);
 }
 
 template<class T>
 typename safelist<T>::iterator safelist<T>::end()
 {
-	return iterator(std::weak_ptr<entry>(entryPoint));
+	return iterator(entryPoint);
 }
 
 template<class T>
 typename safelist<T>::const_iterator safelist<T>::begin() const
 {
-	return const_iterator(std::weak_ptr<entry>(entryPoint->next));
+	return const_iterator(entryPoint->next);
 }
 
 template<class T>
@@ -284,7 +338,7 @@ typename safelist<T>::const_iterator safelist<T>::end() const
 template<class T>
 typename safelist<T>::iterator& safelist<T>::iterator::operator++()
 {
-	item = std::weak_ptr<entry>(item.lock()->next);
+	item = item.lock()->next;
 	return *this;
 }
 
@@ -341,7 +395,7 @@ safelist<T>::const_iterator::const_iterator(const safelist<T>::iterator& it): it
 template<class T>
 typename safelist<T>::const_iterator& safelist<T>::const_iterator::operator++()
 {
-	item = std::weak_ptr<entry>(item.lock()->next);
+	item = item.lock()->next;
 	return *this;
 }
 

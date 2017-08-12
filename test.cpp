@@ -54,9 +54,31 @@ void test_constructors()
 	print_list(T({4, 8, 16, 2, 32}));
 	print_list(T(5, 28));
 
-	T t1 = T({4, 8, 16, 2, 32});
+	T t1 = {4, 8, 16, 2, 32};
 	T t2 = t1;
 	print_list(t2);
+}
+
+template<class T>
+void test_pop()
+{
+	std::cout << "testing pop_back" << std::endl;
+
+	T t = {1, 2, 3, 4};
+	while (!t.empty())
+	{
+		print_list(t);
+		t.pop_back();
+	}
+
+	std::cout << "testing pop_front" << std::endl;
+
+	t = T({4, 3, 2, 1});
+	while (!t.empty())
+	{
+		print_list(t);
+		t.pop_front();
+	}
 }
 
 template<class T>
@@ -73,6 +95,8 @@ void test()
 
 	test_access(t);
 	test_access((const T) t);
+
+	test_pop<T>();
 }
 
 int main(int argc, char**)
