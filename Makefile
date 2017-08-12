@@ -1,15 +1,19 @@
+EXE=test
+
 CXXFLAGS=-Wall -Wextra -g -std=c++11 -O0
 
-all: test
+.PHONY: verify all
 
-test: test.cpp safelist.hpp
+all: $(EXE)
+
+$(EXE): test.cpp safelist.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 verify: reference.out actual.out
 	diff $^
 
-reference.out: test
-	./test -r > $@ 2> /dev/null
+reference.out: $(EXE)
+	valgrind --leak-check=full ./$< -r > $@ 2> /dev/null
 
-actual.out: test
-	valgrind --error-exitcode=1 --leak-check=full ./test > $@
+actual.out: $(EXE)
+	valgrind --error-exitcode=1 --leak-check=full ./$< > $@
