@@ -13,7 +13,7 @@ verify: reference.out actual.out
 	diff $^
 
 reference.out: $(EXE)
-	valgrind --leak-check=full ./$< -r > $@ 2> /dev/null
+	valgrind --leak-check=full ./$< -r > $@
 
 actual.out: $(EXE)
 	valgrind --error-exitcode=1 --leak-check=full ./$< > $@

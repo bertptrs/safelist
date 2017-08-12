@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <limits>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -64,6 +65,12 @@ class safelist
 		void pop_front();
 		void pop_back();
 
+		// (re)sizing
+		size_type size();
+		size_type max_size();
+		void resize(size_type count);
+		void resize(size_type count, const value_type& value);
+
 		// Element accesss
 		value_type& front();
 		value_type& back();
@@ -81,6 +88,7 @@ class safelist
 
 	private:
 		struct entry;
+		size_type m_size;
 
 		std::shared_ptr<entry> entryPoint;
 };
@@ -199,6 +207,7 @@ safelist<T>::safelist(const safelist<T>& other): safelist(other.begin(), other.e
 template<class T>
 safelist<T>::safelist(safelist<T>&& other)
 {
+	m_size = other.size();
 	entryPoint = other.entryPoint;
 	other.entryPoint = nullptr;
 }
@@ -233,23 +242,57 @@ safelist<T>& safelist<T>::operator=(safelist<T>&& other)
 {
 	entryPoint->next = nullptr; // Allow this list to auto-delete
 	entryPoint = other.entryPoint; // Take other list entrypoint
+	m_size = other.m_size;
 	other.entryPoint = nullptr; // Invalidate other
 
 	return *this;
 }
 
+// Sizing functions
 
 template<class T>
 void safelist<T>::clear()
 {
+	m_size = 0;
 	entryPoint->next = entryPoint;
 	entryPoint->prev = entryPoint;
 }
 
 template<class T>
+typename safelist<T>::size_type safelist<T>::size()
+{
+	return m_size;
+}
+
+
+template<class T>
+typename safelist<T>::size_type safelist<T>::max_size()
+{
+	return std::numeric_limits<value_type>::max();
+}
+
+template<class T>
+void safelist<T>::resize(size_type count)
+{
+	resize(count, T());
+}
+
+template<class T>
+void safelist<T>::resize(size_type count, const value_type& value)
+{
+	while (m_size > count) {
+		pop_back();
+	}
+
+	while (m_size < count) {
+		push_back(value);
+	}
+}
+
+template<class T>
 bool safelist<T>::empty() const
 {
-	return entryPoint->next == entryPoint;
+	return m_size == 0;
 }
 
 // Element access
@@ -283,6 +326,7 @@ void safelist<T>::push_front(const T& value)
 {
 	entryPoint->next = std::make_shared<entry>(value, entryPoint->next, entryPoint);
 	entryPoint->next->next->prev = entryPoint->next;
+	++m_size;
 }
 
 template<class T>
@@ -291,22 +335,29 @@ void safelist<T>::push_back(const T& value)
 	auto tmpShared = entryPoint->prev.lock();
 
 	entryPoint->prev = tmpShared->next = std::make_shared<entry>(value, entryPoint, entryPoint->prev);
+	++m_size;
 }
 
 // Element deletion
 template<class T>
 void safelist<T>::pop_front()
 {
-	entryPoint->next = entryPoint->next->next;
-	entryPoint->next->prev = entryPoint;
+	if (m_size) {
+		entryPoint->next = entryPoint->next->next;
+		entryPoint->next->prev = entryPoint;
+		--m_size;
+	}
 }
 
 template<class T>
 void safelist<T>::pop_back()
 {
-	auto tempShared = entryPoint->prev.lock()->prev.lock();
-	entryPoint->prev = tempShared;
-	tempShared->next = entryPoint;
+	if (m_size) {
+		auto tempShared = entryPoint->prev.lock()->prev.lock();
+		entryPoint->prev = tempShared;
+		tempShared->next = entryPoint;
+		--m_size;
+	}
 }
 
 // Iterator creation

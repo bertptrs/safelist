@@ -48,8 +48,8 @@ differences are:
 - [ ] Const reverse iterators
 - [ ] Insert at iterator
 - [ ] Delete at iterator
-- [ ] Sizing
-- [ ] Resizing
+- [x] Sizing
+- [x] Resizing
 
 ### Comparisons
 

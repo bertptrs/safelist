@@ -82,9 +82,28 @@ void test_pop()
 }
 
 template<class T>
+void test_sizing()
+{
+	std::cout << "Testing sizing functions" << std::endl;
+	T t;
+	std::cout << t.size() << std::endl;
+
+	t.resize(2);
+	std::cout << t.size() << std::endl;
+	print_list(t);
+
+	t.resize(8, 4);
+	std::cout << t.size() << std::endl;
+	print_list(t);
+
+	t.resize(3);
+	std::cout << t.size() << std::endl;
+	print_list(t);
+}
+
+template<class T>
 void test()
 {
-
 	T t;
 	setup_list(t);
 
@@ -97,6 +116,7 @@ void test()
 	test_access((const T) t);
 
 	test_pop<T>();
+	test_sizing<T>();
 }
 
 int main(int argc, char**)
