@@ -62,6 +62,14 @@ class safelist
 		void push_front(const value_type& value);
 		void push_back(const value_type& value);
 
+		// Emplacement
+		template<class... Args>
+			iterator emplace(const_iterator pos, Args&&... args);
+		template<class... Args>
+			void emplace_back(Args&&... args);
+		template<class... Args>
+			void emplace_front(Args&&... args);
+
 		void pop_front();
 		void pop_back();
 
@@ -148,9 +156,13 @@ class safelist<T>::const_iterator
 template<class T>
 struct safelist<T>::entry
 {
-	std::weak_ptr<entry> prev;
-	std::shared_ptr<entry> next;
-	std::unique_ptr<value_type> value;
+	typedef std::weak_ptr<entry> prev_ptr_t;
+	typedef std::shared_ptr<entry> next_ptr_t;
+	typedef std::unique_ptr<value_type> value_ptr_t;
+
+	prev_ptr_t prev;
+	next_ptr_t next;
+	value_ptr_t value;
 
 	entry()
 	{
@@ -161,10 +173,17 @@ struct safelist<T>::entry
 	{
 	}
 
-	entry (const value_type& value, const std::shared_ptr<entry>& next, const std::weak_ptr<entry>& prev) :
+	entry (const value_type& value, const next_ptr_t& next, const prev_ptr_t& prev) :
 		prev(prev),
 		next(next),
 		value(std::make_unique<value_type>(value))
+	{
+	}
+
+	entry(value_ptr_t&& value, const next_ptr_t& next, const prev_ptr_t& prev) :
+		prev(prev),
+		next(next),
+		value(std::move(value))
 	{
 	}
 };
@@ -178,15 +197,18 @@ safelist<T>::safelist(): entryPoint(std::make_shared<entry>())
 }
 
 template<class T>
-safelist<T>::safelist(size_type count): safelist(count, value_type())
+safelist<T>::safelist(size_type count): safelist()
 {
+	while (count--) {
+		emplace_back();
+	}
 }
 
 template<class T>
 safelist<T>::safelist(size_type count, const value_type& value): safelist()
 {
 	while (count--) {
-		push_front(value);
+		push_back(value);
 	}
 }
 
@@ -208,8 +230,7 @@ template<class T>
 safelist<T>::safelist(safelist<T>&& other)
 {
 	m_size = other.size();
-	entryPoint = other.entryPoint;
-	other.entryPoint = nullptr;
+	entryPoint = std::move(other.entryPoint);
 }
 
 template<class T>
@@ -240,10 +261,9 @@ safelist<T>& safelist<T>::operator=(const safelist<T>& other)
 template<class T>
 safelist<T>& safelist<T>::operator=(safelist<T>&& other)
 {
-	entryPoint->next = nullptr; // Allow this list to auto-delete
-	entryPoint = other.entryPoint; // Take other list entrypoint
+	entryPoint->next = nullptr; // Need to break the ring of references
+	entryPoint = std::move(other.entryPoint); // Take other list entrypoint
 	m_size = other.m_size;
-	other.entryPoint = nullptr; // Invalidate other
 
 	return *this;
 }
@@ -358,6 +378,35 @@ void safelist<T>::pop_back()
 		tempShared->next = entryPoint;
 		--m_size;
 	}
+}
+
+// Emplacement functions
+template<class T>
+template<class... Args>
+typename safelist<T>::iterator safelist<T>::emplace(const_iterator pos, Args&&... args)
+{
+	auto realPos = std::const_pointer_cast<entry>((--pos).item.lock());
+	realPos->next->next->prev = realPos->next = std::make_shared<entry>(std::make_unique<value_type>(args...), realPos->next, realPos);
+
+	++m_size;
+
+	return iterator(realPos->next);
+}
+
+
+template<class T>
+template<class... Args>
+void safelist<T>::emplace_back(Args&&... args)
+{
+	emplace(end(), args...);
+}
+
+
+template<class T>
+template<class... Args>
+void safelist<T>::emplace_front(Args&&... args)
+{
+	emplace(++begin(), args...);
 }
 
 // Iterator creation

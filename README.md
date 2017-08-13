@@ -40,13 +40,14 @@ differences are:
 - [x] Range constructor
 - [x] Assignment operators
 - [x] Push back/push front
-- [ ] Emplace back/emplace front
+- [x] Emplace back/emplace front
 - [x] Pop back/pop front
 - [x] Iterators
 - [x] Const iterators
 - [ ] Reverse iterators
 - [ ] Const reverse iterators
 - [ ] Insert at iterator
+- [x] Emplace at iterator
 - [ ] Delete at iterator
 - [x] Sizing
 - [x] Resizing

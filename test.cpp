@@ -46,6 +46,21 @@ void setup_list(T& l)
 }
 
 template<class T>
+void test_emplace()
+{
+	T t = {1, 2, 3};
+	t.emplace(t.end(), 4);
+	print_list(t);
+
+	t.emplace(++(++t.begin()), 0);
+	print_list(t);
+
+	t.emplace_front(-1);
+	t.emplace_back(5);
+	print_list(t);
+}
+
+template<class T>
 void test_constructors()
 {
 	std::cout << "Testing different constructors" << std::endl;
