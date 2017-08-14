@@ -54,8 +54,8 @@ differences are:
 
 ### Comparisons
 
-- [ ] Equality/inequality
-- [ ] Greater than/less than
+- [x] Equality/inequality
+- [x] Greater than/less than
 
 ### Algorithmic use
 

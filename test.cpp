@@ -1,4 +1,5 @@
 #include "safelist.hpp"
+#include <cassert>
 #include <list>
 #include <iostream>
 #include <typeinfo>
@@ -35,6 +36,23 @@ void test_access(T& sl)
 {
 	std::cout << sl.front() << std::endl;
 	std::cout << sl.back() << std::endl;
+}
+
+template<class T>
+void test_compare()
+{
+	std::cout << "Testing comparison operators" << std::endl;
+
+	T t1 = {1, 2, 3, 4};
+	T t2 = {1, 2, 4, 3};
+
+	assert(t1 == t1);
+	assert(t1 != t2);
+
+	assert(t1 < t2);
+	assert(t1 <= t2);
+	assert(t2 > t1);
+	assert(t2 >= t1);
 }
 
 template<class T>

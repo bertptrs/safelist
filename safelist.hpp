@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <initializer_list>
 #include <limits>
 #include <memory>
@@ -93,6 +94,14 @@ class safelist
 		iterator end();
 		const_iterator begin() const;
 		const_iterator end() const;
+
+		bool operator<(const safelist& other) const;
+		bool operator<=(const safelist& other) const;
+		bool operator>=(const safelist& other) const;
+		bool operator>(const safelist& other) const;
+
+		bool operator==(const safelist& other) const;
+		bool operator!=(const safelist& other) const;
 
 	private:
 		struct entry;
@@ -432,6 +441,53 @@ template<class T>
 typename safelist<T>::const_iterator safelist<T>::end() const
 {
 	return const_iterator(entryPoint);
+}
+
+// Comparison functions
+template<class T>
+bool safelist<T>::operator<(const safelist& other) const
+{
+	return std::lexicographical_compare(begin(), end(), other.begin(), other.end(), std::less<value_type>());
+}
+
+template<class T>
+bool safelist<T>::operator<=(const safelist& other) const
+{
+	return std::lexicographical_compare(begin(), end(), other.begin(), other.end(), std::less_equal<value_type>());
+}
+
+template<class T>
+bool safelist<T>::operator>=(const safelist& other) const
+{
+	return std::lexicographical_compare(begin(), end(), other.begin(), other.end(), std::greater_equal<value_type>());
+}
+
+template<class T>
+bool safelist<T>::operator>(const safelist& other) const
+{
+	return std::lexicographical_compare(begin(), end(), other.begin(), other.end(), std::greater<value_type>());
+}
+
+template<class T>
+bool safelist<T>::operator==(const safelist& other) const
+{
+	if (m_size != other.m_size) {
+		return false;
+	}
+
+	for (auto it1 = begin(), it2 = begin(); it1 != end(); ++it1, ++it2) {
+		if (*it1 != *it2) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+template<class T>
+bool safelist<T>::operator!=(const safelist& other) const
+{
+	return !(*this == other);
 }
 
 // Iterator functions
