@@ -59,7 +59,7 @@ differences are:
 
 ### Algorithmic use
 
-- [ ] sort
+- [x] sort
 - [ ] merge
 - [ ] splice
 - [ ] remove (if)

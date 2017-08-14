@@ -95,6 +95,11 @@ class safelist
 		const_iterator begin() const;
 		const_iterator end() const;
 
+		// Algorithms
+		template<class Compare = std::less<value_type>>
+		void sort(Compare compare = Compare());
+
+		// Comparisons
 		bool operator<(const safelist& other) const;
 		bool operator<=(const safelist& other) const;
 		bool operator>=(const safelist& other) const;
@@ -194,6 +199,13 @@ struct safelist<T>::entry
 		next(next),
 		value(std::move(value))
 	{
+	}
+
+	void swap(entry& other)
+	{
+		if (value && other.value) {
+			std::swap(value, other.value);
+		}
 	}
 };
 
@@ -488,6 +500,22 @@ template<class T>
 bool safelist<T>::operator!=(const safelist& other) const
 {
 	return !(*this == other);
+}
+
+template<class T>
+template<class Compare>
+void safelist<T>::sort(Compare compare)
+{
+	// Sorry for the lack of n log n, I'll just implement bubblesort
+	for (auto endPtr = end(); endPtr != begin(); --endPtr) {
+		auto it = begin();
+		auto prev = it++;
+		for (; it != endPtr; ++prev, ++it) {
+			if (!compare(*prev, *it)) {
+				it.item.lock()->swap(*prev.item.lock());
+			}
+		}
+	}
 }
 
 // Iterator functions

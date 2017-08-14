@@ -135,6 +135,20 @@ void test_sizing()
 }
 
 template<class T>
+void test_sorting()
+{
+	std::cout << "Testing sorting functions" << std::endl;
+
+	T t = {7,1,8,4,4,7,1,5,2};
+	t.sort();
+
+	print_list(t);
+
+	t.sort(std::greater<typename T::value_type>());
+	print_list(t);
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -150,6 +164,7 @@ void test()
 
 	test_pop<T>();
 	test_sizing<T>();
+	test_sorting<T>();
 }
 
 int main(int argc, char**)
