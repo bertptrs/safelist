@@ -53,6 +53,8 @@ class safelist
 			typename = typename if_is_compatible_iterator<InputIt>::type>
 				safelist(InputIt first, InputIt last);
 
+		void swap(safelist& other);
+
 		// Assignment operators
 		safelist<value_type>& operator=(const safelist<value_type>& other);
 		safelist<value_type>& operator=(safelist<value_type>&& other);
@@ -265,6 +267,19 @@ safelist<T>::~safelist()
 	if (entryPoint) {
 		entryPoint->next = nullptr;
 	}
+}
+
+template<class T>
+void safelist<T>::swap(safelist& other)
+{
+	std::swap(entryPoint, other.entryPoint);
+	std::swap(m_size, other.m_size);
+}
+
+template<class T>
+void std::swap(safelist<T>& a, safelist<T>& b)
+{
+	a.swap(b);
 }
 
 // Assignment operators
