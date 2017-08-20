@@ -1,6 +1,6 @@
 language: c++
 
-compilers:
+compiler:
     - gcc
     - clang
 
