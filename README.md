@@ -65,6 +65,7 @@ differences are:
 - [ ] merge
 - [ ] splice
 - [ ] remove (if)
+- [x] reverse
 - [x] unique
 
 ## Why would you do this?

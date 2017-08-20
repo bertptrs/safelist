@@ -111,6 +111,8 @@ class safelist
 		template<class BinaryPredicate = std::equal_to<value_type>>
 		void unique(BinaryPredicate pred = BinaryPredicate());
 
+		void reverse();
+
 		// Comparisons
 		bool operator<(const safelist& other) const;
 		bool operator<=(const safelist& other) const;
@@ -606,6 +608,17 @@ void safelist<T>::unique(BinaryPredicate pred)
 			prev = it;
 			++it;
 		}
+	}
+}
+
+template<class T>
+void safelist<T>::reverse()
+{
+	auto it = begin();
+	auto rIt = end();
+
+	for (auto iters = size() / 2; iters > 0; --iters) {
+		std::swap((it++).item.lock()->value, (--rIt).item.lock()->value);
 	}
 }
 

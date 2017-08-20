@@ -178,6 +178,21 @@ void test_unique()
 }
 
 template<class T>
+void test_reverse()
+{
+	std::cout << "Testing list reversing" << std::endl;
+
+	T t = {1, 2, 3, 4, 5};
+	t.reverse();
+
+	print_list(t);
+
+	t = {5, 6, 7, 8, 9, 10};
+	t.reverse();
+	print_list(t);
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -196,6 +211,7 @@ void test()
 	test_sorting<T>();
 	test_erase<T>();
 	test_unique<T>();
+	test_reverse<T>();
 }
 
 int main(int argc, char**)
