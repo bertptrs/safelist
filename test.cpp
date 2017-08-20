@@ -193,6 +193,21 @@ void test_reverse()
 }
 
 template<class T>
+void test_remove()
+{
+	std::cout << "Testing list removal" << std::endl;
+
+	T t = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+	t.remove(7);
+	print_list(t);
+
+	t.remove_if([] (int a) { return a % 2 == 0; });
+	print_list(t);
+
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -212,6 +227,7 @@ void test()
 	test_erase<T>();
 	test_unique<T>();
 	test_reverse<T>();
+	test_remove<T>();
 }
 
 int main(int argc, char**)

@@ -64,7 +64,7 @@ differences are:
 - [x] sort
 - [ ] merge
 - [ ] splice
-- [ ] remove (if)
+- [x] remove (if)
 - [x] reverse
 - [x] unique
 

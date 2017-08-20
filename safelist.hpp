@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -112,6 +113,10 @@ class safelist
 		void unique(BinaryPredicate pred = BinaryPredicate());
 
 		void reverse();
+		void remove(const value_type& value);
+
+		template<class UnaryPredicate>
+		void remove_if(UnaryPredicate pred);
 
 		// Comparisons
 		bool operator<(const safelist& other) const;
@@ -621,6 +626,29 @@ void safelist<T>::reverse()
 		std::swap((it++).item.lock()->value, (--rIt).item.lock()->value);
 	}
 }
+
+template<class T>
+void safelist<T>::remove(const value_type& value)
+{
+	using namespace std::placeholders;
+
+	return remove_if(std::bind(std::equal_to<value_type>(), _1, value));
+}
+
+template<class T>
+template<class UnaryPredicate>
+void safelist<T>::remove_if(UnaryPredicate pred)
+{
+	auto it = begin();
+	while (it != end()) {
+		if (pred(*it)) {
+			erase(it++);
+		} else {
+			++it;
+		}
+	}
+}
+
 
 // Iterator functions
 template<class T>
