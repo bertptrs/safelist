@@ -307,7 +307,7 @@ void safelist<T>::swap(safelist& other)
 }
 
 template<class T>
-void std::swap(safelist<T>& a, safelist<T>& b)
+void swap(safelist<T>& a, safelist<T>& b)
 {
 	a.swap(b);
 }
