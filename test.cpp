@@ -164,6 +164,20 @@ void test_sorting()
 }
 
 template<class T>
+void test_unique()
+{
+	std::cout << "Testing unique" << std::endl;
+
+	T t = {8, 1, 5, 5, 2, 2, 3, 1, 7};
+	t.unique();
+	print_list(t);
+
+	t = {8, 1, 5, 5, 2, 2, 3, 1, 7};
+	t.unique(std::not_equal_to<typename T::value_type>());
+	print_list(t);
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -181,6 +195,7 @@ void test()
 	test_sizing<T>();
 	test_sorting<T>();
 	test_erase<T>();
+	test_unique<T>();
 }
 
 int main(int argc, char**)

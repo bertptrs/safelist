@@ -108,6 +108,9 @@ class safelist
 		template<class Compare = std::less<value_type>>
 		void sort(Compare compare = Compare());
 
+		template<class BinaryPredicate = std::equal_to<value_type>>
+		void unique(BinaryPredicate pred = BinaryPredicate());
+
 		// Comparisons
 		bool operator<(const safelist& other) const;
 		bool operator<=(const safelist& other) const;
@@ -150,6 +153,9 @@ class safelist<T>::iterator
 		bool operator==(const iterator&) const;
 		bool operator!=(const iterator&) const;
 
+		iterator& operator=(const iterator&) = default;
+		iterator& operator=(iterator&&) = default;
+
 	private:
 		std::weak_ptr<entry> item;
 
@@ -183,6 +189,9 @@ class safelist<T>::const_iterator
 		const_reference operator*() const;
 		bool operator==(const const_iterator&) const;
 		bool operator!=(const const_iterator&) const;
+
+		const_iterator& operator=(const const_iterator&) = default;
+		const_iterator& operator=(const_iterator&&) = default;
 
 	private:
 		std::weak_ptr<const entry> item;
@@ -574,6 +583,28 @@ void safelist<T>::sort(Compare compare)
 			if (!compare(*prev, *it)) {
 				it.item.lock()->swap(*prev.item.lock());
 			}
+		}
+	}
+}
+
+template<class T>
+template<class BinaryPredicate>
+void safelist<T>::unique(BinaryPredicate pred)
+{
+	if (empty()) {
+		return;
+	}
+
+	auto it = ++cbegin();
+	const auto eIt = cend();
+	auto prev = cbegin();
+
+	while (it != eIt) {
+		if (pred(*prev, *it)) {
+			erase(it++);
+		} else {
+			prev = it;
+			++it;
 		}
 	}
 }
