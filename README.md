@@ -26,7 +26,7 @@ differences are:
 
 - Allocator is not specifiable, and is the default allocator
 - Features are lacking according to what it says in
-  [Progress](#Progress)
+  [Progress](#progress)
 - Not all typedefs are implemented
 - Not all undefined behaviour works the same way. For instance,
   iterating past the end causes a loop back to the start.
@@ -50,7 +50,7 @@ differences are:
 - [ ] Const reverse iterators
 - [ ] Insert at iterator
 - [x] Emplace at iterator
-- [ ] Delete at iterator
+- [x] Delete at iterator
 - [x] Sizing
 - [x] Resizing
 

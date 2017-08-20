@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -76,6 +77,9 @@ class safelist
 		void pop_front();
 		void pop_back();
 
+		iterator erase(const_iterator iter);
+		iterator erase(const_iterator first, const_iterator last);
+
 		// (re)sizing
 		size_type size();
 		size_type max_size();
@@ -124,6 +128,12 @@ class safelist<T>::iterator
 		friend safelist<T>;
 		friend safelist<T>::const_iterator;
 
+		typedef std::ptrdiff_t difference_type;
+		typedef T value_type;
+		typedef T* pointer;
+		typedef T& reference;
+		typedef std::bidirectional_iterator_tag iterator_category;
+
 		iterator() = default;
 		iterator(const iterator&) = default;
 		iterator(iterator&&) = default;
@@ -141,6 +151,7 @@ class safelist<T>::iterator
 		std::weak_ptr<entry> item;
 
 		iterator(const std::weak_ptr<entry>& item): item(item) {};
+		iterator(const_iterator);
 };
 
 template<class T>
@@ -148,6 +159,13 @@ class safelist<T>::const_iterator
 {
 	public:
 		friend safelist<T>;
+		friend safelist<T>::iterator;
+
+		typedef std::ptrdiff_t difference_type;
+		typedef const T value_type;
+		typedef const T* pointer;
+		typedef const T& reference;
+		typedef std::bidirectional_iterator_tag iterator_category;
 
 		const_iterator() = default;
 		const_iterator(const const_iterator&) = default;
@@ -394,6 +412,30 @@ void safelist<T>::push_back(const T& value)
 	++m_size;
 }
 
+template<class T>
+typename safelist<T>::iterator safelist<T>::erase(const_iterator pos)
+{
+	auto e = pos.item.lock();
+	if (!e->value) {
+		throw std::range_error("Unable to erase end()");
+	}
+
+	auto p = std::const_pointer_cast<entry>(e);
+
+	p->prev.lock()->next = p->next;
+	p->next->prev = p->prev;
+
+	return iterator(p->next);
+}
+
+template<class T>
+typename safelist<T>::iterator safelist<T>::erase(const_iterator first, const_iterator last)
+{
+	for (; first != last; erase(first++));
+
+	return last;
+}
+
 // Element deletion
 template<class T>
 void safelist<T>::pop_front()
@@ -534,6 +576,11 @@ void safelist<T>::sort(Compare compare)
 }
 
 // Iterator functions
+template<class T>
+safelist<T>::iterator::iterator(const_iterator it) : item(std::const_pointer_cast<entry>(it.item.lock()))
+{
+}
+
 template<class T>
 typename safelist<T>::iterator& safelist<T>::iterator::operator++()
 {

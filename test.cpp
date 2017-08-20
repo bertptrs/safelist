@@ -1,7 +1,8 @@
 #include "safelist.hpp"
 #include <cassert>
-#include <list>
 #include <iostream>
+#include <iterator>
+#include <list>
 #include <typeinfo>
 
 template<class T>
@@ -75,6 +76,20 @@ void test_emplace()
 
 	t.emplace_front(-1);
 	t.emplace_back(5);
+	print_list(t);
+}
+
+template<class T>
+void test_erase()
+{
+	std::cout << "Testing erase funciton" << std::endl;
+	T t = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	t.erase(t.begin());
+	print_list(t);
+
+	auto lBegin = t.begin();
+	std::advance(lBegin, 6);
+	t.erase(++t.begin(), lBegin);
 	print_list(t);
 }
 
@@ -165,6 +180,7 @@ void test()
 	test_pop<T>();
 	test_sizing<T>();
 	test_sorting<T>();
+	test_erase<T>();
 }
 
 int main(int argc, char**)
