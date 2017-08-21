@@ -82,8 +82,8 @@ class safelist
 		iterator erase(const_iterator first, const_iterator last);
 
 		// (re)sizing
-		size_type size();
-		size_type max_size();
+		size_type size() const;
+		size_type max_size() const;
 		void resize(size_type count);
 		void resize(size_type count, const value_type& value);
 
@@ -352,14 +352,14 @@ void safelist<T>::clear()
 }
 
 template<class T>
-typename safelist<T>::size_type safelist<T>::size()
+typename safelist<T>::size_type safelist<T>::size() const
 {
 	return m_size;
 }
 
 
 template<class T>
-typename safelist<T>::size_type safelist<T>::max_size()
+typename safelist<T>::size_type safelist<T>::max_size() const
 {
 	return std::numeric_limits<value_type>::max();
 }
@@ -443,6 +443,8 @@ typename safelist<T>::iterator safelist<T>::erase(const_iterator pos)
 
 	p->prev.lock()->next = p->next;
 	p->next->prev = p->prev;
+
+	--m_size;
 
 	return iterator(p->next);
 }

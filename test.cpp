@@ -8,9 +8,13 @@
 template<class T>
 void print_list(const T& l)
 {
+	typename T::size_type s = 0;
 	for (auto x : l) {
+		++s;
 		std::cout << x << std::endl;
 	}
+
+	assert(s == l.size());
 }
 
 template<class T>
