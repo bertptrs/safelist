@@ -109,6 +109,9 @@ class safelist
 		template<class Compare = std::less<value_type>>
 		void sort(Compare compare = Compare());
 
+		template<class Compare = std::less<value_type>>
+		void merge(safelist& other, Compare compare = Compare());
+
 		template<class BinaryPredicate = std::equal_to<value_type>>
 		void unique(BinaryPredicate pred = BinaryPredicate());
 
@@ -616,6 +619,39 @@ void safelist<T>::unique(BinaryPredicate pred)
 			++it;
 		}
 	}
+}
+
+template<class T>
+template<class Compare>
+void safelist<T>::merge(safelist& other, Compare comp)
+{
+	if (&other == this) {
+		// Invalid operation.
+		return;
+	}
+
+	auto selfIt = entryPoint;
+	auto otherIt = other.entryPoint->next;
+
+	while (otherIt != other.entryPoint) {
+		auto selfNext = selfIt->next;
+		auto otherNext = otherIt->next;
+
+		if (selfIt->next == entryPoint || !comp(*selfNext->value, *otherIt->value)) {
+			entryPoint->prev = selfIt->next = otherIt;
+			selfNext->prev = selfIt->next = otherIt;
+			otherIt->prev = selfIt;
+			otherIt->next = std::move(selfNext);
+			otherIt = std::move(otherNext);
+		} else {
+			selfIt = std::move(selfNext);
+		}
+	}
+
+	m_size += other.m_size;
+	other.m_size = 0;
+
+	other.entryPoint->prev = other.entryPoint->next = other.entryPoint;
 }
 
 template<class T>

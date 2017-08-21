@@ -212,6 +212,17 @@ void test_remove()
 }
 
 template<class T>
+void test_merge()
+{
+	T t1 = {0, 2, 4, 6, 8}, t2 = {1, 3, 5, 7, 9};
+
+	t1.merge(t2);
+
+	print_list(t1);
+	print_list(t2);
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -232,6 +243,7 @@ void test()
 	test_unique<T>();
 	test_reverse<T>();
 	test_remove<T>();
+	test_merge<T>();
 }
 
 int main(int argc, char**)
