@@ -75,6 +75,16 @@ class safelist
 		template<class... Args>
 			void emplace_front(Args&&... args);
 
+		// Insertion
+		iterator insert(const_iterator pos, const value_type& value) { return emplace(pos, value); };
+		iterator insert(const_iterator pos, value_type&& value) { return emplace(pos, std::move(value)); };
+		iterator insert(const_iterator pos, size_type count, const value_type& value);
+		template<class InputIt,
+			typename = typename if_is_compatible_iterator<InputIt>::type>
+		iterator insert(const_iterator pos, InputIt first, InputIt last);
+		iterator insert(const_iterator pos, std::initializer_list<value_type> ilist) { return insert(ilist.begin(), ilist.end()); };
+
+
 		void pop_front();
 		void pop_back();
 
@@ -534,6 +544,30 @@ template<class T>
 typename safelist<T>::const_iterator safelist<T>::end() const
 {
 	return const_iterator(entryPoint);
+}
+
+// Insertion functions
+template<class T>
+typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, size_type count, const value_type& value)
+{
+	iterator retval = pos;
+	for (; count > 0; --count) {
+		retval = emplace(retval, value);
+	}
+
+	return retval;
+}
+
+template<class T>
+template<class InputIt, typename>
+typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, InputIt first, InputIt last)
+{
+	iterator retval = pos;
+	for (; first != last; ++first) {
+		retval = emplace(retval, *first);
+	}
+
+	return retval;
 }
 
 // Comparison functions

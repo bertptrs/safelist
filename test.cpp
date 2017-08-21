@@ -223,6 +223,18 @@ void test_merge()
 }
 
 template<class T>
+void test_insert()
+{
+	T t;
+	t.insert(t.begin(), 12);
+	t.insert(t.begin(), 13);
+	t.insert(++t.begin(), {11, 12, 13, 14});
+	t.insert(++t.begin(), 60, 2);
+
+	print_list(t);
+}
+
+template<class T>
 void test()
 {
 	T t;

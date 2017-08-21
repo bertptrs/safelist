@@ -50,7 +50,7 @@ differences are:
 - [x] Const iterators
 - [ ] Reverse iterators
 - [ ] Const reverse iterators
-- [ ] Insert at iterator
+- [x] Insert at iterator
 - [x] Emplace at iterator
 - [x] Delete at iterator
 - [x] Sizing
