@@ -76,13 +76,13 @@ class safelist
 			void emplace_front(Args&&... args);
 
 		// Insertion
-		iterator insert(const_iterator pos, const value_type& value) { return emplace(pos, value); };
-		iterator insert(const_iterator pos, value_type&& value) { return emplace(pos, std::move(value)); };
+		iterator insert(const_iterator pos, const value_type& value);
+		iterator insert(const_iterator pos, value_type&& value);
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
 		template<class InputIt,
 			typename = typename if_is_compatible_iterator<InputIt>::type>
 		iterator insert(const_iterator pos, InputIt first, InputIt last);
-		iterator insert(const_iterator pos, std::initializer_list<value_type> ilist) { return insert(ilist.begin(), ilist.end()); };
+		iterator insert(const_iterator pos, std::initializer_list<value_type> ilist);
 
 
 		void pop_front();
@@ -548,6 +548,18 @@ typename safelist<T>::const_iterator safelist<T>::end() const
 
 // Insertion functions
 template<class T>
+typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, const value_type& value)
+{
+	return emplace(pos, value);
+}
+
+template<class T>
+typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, value_type&& value)
+{
+	return emplace(pos, value);
+}
+
+template<class T>
 typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, size_type count, const value_type& value)
 {
 	iterator retval = pos;
@@ -568,6 +580,12 @@ typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, InputIt f
 	}
 
 	return retval;
+}
+
+template<class T>
+typename safelist<T>::iterator safelist<T>::insert(const_iterator pos, std::initializer_list<value_type> ilist)
+{
+	return insert(pos, ilist.begin(), ilist.end());
 }
 
 // Comparison functions
