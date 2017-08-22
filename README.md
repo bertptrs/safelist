@@ -48,8 +48,8 @@ differences are:
 - [x] Pop back/pop front
 - [x] Iterators
 - [x] Const iterators
-- [ ] Reverse iterators
-- [ ] Const reverse iterators
+- [x] Reverse iterators
+- [x] Const reverse iterators
 - [x] Insert at iterator
 - [x] Emplace at iterator
 - [x] Delete at iterator

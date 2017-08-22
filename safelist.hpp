@@ -33,6 +33,8 @@ class safelist
 
 		class iterator;
 		class const_iterator;
+		typedef std::reverse_iterator<iterator> reverse_iterator;
+		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 		// Template definitions
 		template<typename Iterator>
@@ -113,6 +115,13 @@ class safelist
 		const_iterator end() const;
 		const_iterator cbegin() const { return begin();};
 		const_iterator cend() const { return end();};
+
+		reverse_iterator rbegin();
+		reverse_iterator rend();
+		const_reverse_iterator rbegin() const;
+		const_reverse_iterator rend() const;
+		const_reverse_iterator crbegin() const { return rbegin(); };
+		const_reverse_iterator crend() const { return rend(); };
 
 
 		// Algorithms
@@ -544,6 +553,30 @@ template<class T>
 typename safelist<T>::const_iterator safelist<T>::end() const
 {
 	return const_iterator(entryPoint);
+}
+
+template<class T>
+typename safelist<T>::reverse_iterator safelist<T>::rbegin()
+{
+	return reverse_iterator(end());
+}
+
+template<class T>
+typename safelist<T>::reverse_iterator safelist<T>::rend()
+{
+	return reverse_iterator(begin());
+}
+
+template<class T>
+typename safelist<T>::const_reverse_iterator safelist<T>::rbegin() const
+{
+	return const_reverse_iterator(end());
+}
+
+template<class T>
+typename safelist<T>::const_reverse_iterator safelist<T>::rend() const
+{
+	return const_reverse_iterator(begin());
 }
 
 // Insertion functions

@@ -29,6 +29,11 @@ void test_iters(T& sl)
 		std::cout << *it << std::endl;
 	}
 
+	// Test reverse iterators
+	for (auto it = sl.rbegin(); it != sl.rend(); ++it) {
+		std::cout << *it << std::endl;
+	}
+
 	// Test reverse iteration
 	auto it = sl.end();
 	do {
