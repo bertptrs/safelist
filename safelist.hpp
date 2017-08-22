@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <initializer_list>
 #include <functional>
 #include <limits>
@@ -140,6 +141,10 @@ class safelist
 		template<class UnaryPredicate>
 		void remove_if(UnaryPredicate pred);
 
+		void splice(const_iterator pos, safelist& other);
+		void splice(const_iterator pos, safelist& other, const_iterator it);
+		void splice(const_iterator pos, safelist& other, const_iterator first, const_iterator last);
+
 		// Comparisons
 		bool operator<(const safelist& other) const;
 		bool operator<=(const safelist& other) const;
@@ -154,6 +159,8 @@ class safelist
 		size_type m_size;
 
 		std::shared_ptr<entry> entryPoint;
+
+		inline std::shared_ptr<entry> iterator_entry(const_iterator& it);
 };
 
 template<class T>
@@ -770,6 +777,71 @@ void safelist<T>::remove_if(UnaryPredicate pred)
 			++it;
 		}
 	}
+}
+
+template<class T>
+std::shared_ptr<typename safelist<T>::entry> safelist<T>::iterator_entry(const_iterator& it)
+{
+	return std::const_pointer_cast<entry>(it.item.lock());
+}
+
+template<class T>
+void safelist<T>::splice(const_iterator pos, safelist& other)
+{
+	assert(&other != this);
+	if (other.empty()) {
+		return;
+	}
+
+	auto ownPtr = iterator_entry(pos);
+
+	// Attach beginning
+	ownPtr->prev.lock()->next = other.entryPoint->next;
+	other.entryPoint->next->prev = ownPtr->prev;
+
+	// Attach end
+	ownPtr->prev = other.entryPoint->prev;
+	other.entryPoint->prev.lock()->next = ownPtr;
+
+	// Transfer size
+	m_size += other.m_size;
+
+	// Clear other
+	other.clear();
+}
+
+template<class T>
+void safelist<T>::splice(const_iterator pos, safelist& other, const_iterator it)
+{
+	const_iterator prev = it++;
+	splice(pos, other, prev, it);
+}
+
+template<class T>
+void safelist<T>::splice(const_iterator pos, safelist& other, const_iterator first, const_iterator last)
+{
+	// This little line is the only reason this is O(n)…
+	auto dist = std::distance(first, last);
+
+	// Pointer to first element after splice
+	auto ownPtr = iterator_entry(pos);
+
+	// Pointer to the first and last element of foreign range
+	auto firstPtr = iterator_entry(first);
+	auto lastPtr = iterator_entry(last)->prev.lock();
+
+	// Cut out the slice from other
+	lastPtr->next->prev = firstPtr->prev;
+	firstPtr->prev.lock()->next = lastPtr->next;
+
+	// Insert it into our range
+	ownPtr->prev.lock()->next = firstPtr;
+	firstPtr->prev = ownPtr->prev;
+	ownPtr->prev = lastPtr;
+	lastPtr->next = ownPtr;
+
+	m_size += dist;
+	other.m_size -= dist;
 }
 
 

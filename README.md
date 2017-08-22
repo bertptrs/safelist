@@ -34,6 +34,7 @@ differences are:
   specified by the stl. Feel free to send a PR with an improvement.
 - The move variant of `merge()` is missing, because there is no real
   benefit to it in this implementation.
+- The move variant of `splice()` is missing for the same reason.
 
 ## Progress
 
@@ -65,7 +66,7 @@ differences are:
 
 - [x] sort
 - [x] merge
-- [ ] splice
+- [x] splice
 - [x] remove (if)
 - [x] reverse
 - [x] unique

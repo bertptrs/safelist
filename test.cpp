@@ -240,6 +240,19 @@ void test_insert()
 }
 
 template<class T>
+void test_splice()
+{
+	T t1 = {1, 4, 5, 6, 7};
+	T t2 = {2, 3};
+	t1.splice(++t1.begin(), t2);
+	print_list(t1);
+	print_list(t2);
+
+	T t3 = {8, 9};
+	t1.splice(t1.end(), t3, t3.begin(), t3.end());
+}
+
+template<class T>
 void test()
 {
 	T t;
@@ -261,6 +274,7 @@ void test()
 	test_reverse<T>();
 	test_remove<T>();
 	test_merge<T>();
+	test_splice<T>();
 }
 
 int main(int argc, char**)
