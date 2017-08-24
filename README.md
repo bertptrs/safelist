@@ -30,8 +30,6 @@ differences are:
 - Not all typedefs are implemented
 - Not all undefined behaviour works the same way. For instance,
   iterating past the end causes a loop back to the start.
-- The complexity of `sort()` is `O(n^2)` rather than the `O(n log n)`
-  specified by the stl. Feel free to send a PR with an improvement.
 - The move variant of `merge()` is missing, because there is no real
   benefit to it in this implementation.
 - The move variant of `splice()` is missing for the same reason.
