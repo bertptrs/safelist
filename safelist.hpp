@@ -813,35 +813,35 @@ void safelist<T>::splice(const_iterator pos, safelist& other)
 template<class T>
 void safelist<T>::splice(const_iterator pos, safelist& other, const_iterator it)
 {
-	const_iterator prev = it++;
-	splice(pos, other, prev, it);
+	assert(it != other.end());
+
+	// Make sure we don't lose our edges.
+	auto otherPtr = iterator_entry(it);
+	auto selfPtr = iterator_entry(pos);
+	auto prevPtr = selfPtr->prev.lock();
+
+	// Cut out from other list
+	otherPtr->next->prev = otherPtr->prev;
+	otherPtr->prev.lock()->next = otherPtr->next;
+
+	// Reconfigure the other pointer.
+	otherPtr->next = selfPtr;
+	otherPtr->prev = prevPtr;
+
+	// Update own chain
+	selfPtr->prev = prevPtr->next = otherPtr;
+
+	// Update sizes
+	++m_size;
+	--other.m_size;
 }
 
 template<class T>
 void safelist<T>::splice(const_iterator pos, safelist& other, const_iterator first, const_iterator last)
 {
-	// This little line is the only reason this is O(n)…
-	auto dist = std::distance(first, last);
-
-	// Pointer to first element after splice
-	auto ownPtr = iterator_entry(pos);
-
-	// Pointer to the first and last element of foreign range
-	auto firstPtr = iterator_entry(first);
-	auto lastPtr = iterator_entry(last)->prev.lock();
-
-	// Cut out the slice from other
-	lastPtr->next->prev = firstPtr->prev;
-	firstPtr->prev.lock()->next = lastPtr->next;
-
-	// Insert it into our range
-	ownPtr->prev.lock()->next = firstPtr;
-	firstPtr->prev = ownPtr->prev;
-	ownPtr->prev = lastPtr;
-	lastPtr->next = ownPtr;
-
-	m_size += dist;
-	other.m_size -= dist;
+	while (first != last) {
+		splice(pos, other, first++);
+	}
 }
 
 

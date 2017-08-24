@@ -242,6 +242,7 @@ void test_insert()
 template<class T>
 void test_splice()
 {
+	std::cout << "Testing splicing" << std::endl;
 	T t1 = {1, 4, 5, 6, 7};
 	T t2 = {2, 3};
 	t1.splice(++t1.begin(), t2);
@@ -250,6 +251,8 @@ void test_splice()
 
 	T t3 = {8, 9};
 	t1.splice(t1.end(), t3, t3.begin(), t3.end());
+	print_list(t1);
+	print_list(t3);
 }
 
 template<class T>
