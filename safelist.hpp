@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <iostream>
 
 #if __cplusplus < 201300
 namespace std {
@@ -679,16 +680,22 @@ template<class T>
 template<class Compare>
 void safelist<T>::sort(Compare compare)
 {
-	// Sorry for the lack of n log n, I'll just implement bubblesort
-	for (auto endPtr = end(); endPtr != begin(); --endPtr) {
-		auto it = begin();
-		auto prev = it++;
-		for (; it != endPtr; ++prev, ++it) {
-			if (!compare(*prev, *it)) {
-				it.item.lock()->swap(*prev.item.lock());
-			}
-		}
+	if (size() < 2) {
+		return; // Already sorted.
 	}
+
+	const auto dist = size() / 2;
+
+	safelist other;
+	auto it = begin();
+	std::advance(it, dist);
+
+	other.splice(other.end(), *this, begin(), it);
+
+	sort(compare);
+	other.sort(compare);
+
+	merge(other, compare);
 }
 
 template<class T>
