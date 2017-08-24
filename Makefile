@@ -4,7 +4,7 @@ CXXFLAGS=-Wall -Wextra -g -std=c++11 -O0
 
 .PHONY: verify all
 
-all: $(EXE)
+all: $(EXE) stress
 
 $(EXE): test.cpp safelist.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
